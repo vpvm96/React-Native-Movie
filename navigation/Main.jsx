@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { DARK_COLOR } from "../assets/styles/colors"
 import Tabs from "./Tabs"
+import Stacks from "./Stacks"
 
 const Stack = createNativeStackNavigator()
 
@@ -12,7 +12,7 @@ const Main = () => {
       }}
     >
       <Stack.Screen name="Tabs" component={Tabs} />
-      {/* <Stack.Screen /> */}
+      <Stack.Screen name="Stacks" component={Stacks} />
     </Stack.Navigator>
   )
 }
