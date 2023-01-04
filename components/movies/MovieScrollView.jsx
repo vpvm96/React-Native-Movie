@@ -1,10 +1,18 @@
+import { useNavigation } from "@react-navigation/native"
 import { getImgPath } from "../../utils/util"
 import styled from "@emotion/native"
 
 const MovieScrollView = ({ movie }) => {
   const { id, poster_path, title, vote_average } = movie
+  const { navigate } = useNavigation()
+
   return (
-    <MovieViewWrap>
+    <MovieViewWrap
+      key={id}
+      onPress={() =>
+        navigate("Stacks", { screen: "Detail", params: { movieId: id } })
+      }
+    >
       <MovieViewImgBox>
         <MovieViewImg source={{ uri: getImgPath(poster_path) }} />
       </MovieViewImgBox>

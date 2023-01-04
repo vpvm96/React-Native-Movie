@@ -1,10 +1,17 @@
+import { useNavigation } from "@react-navigation/native"
 import { getImgPath } from "../../utils/util"
 import styled from "@emotion/native"
 
 const MovieComingView = ({ movie }) => {
   const { id, poster_path, title, overview, release_date } = movie
+  const { navigate } = useNavigation()
   return (
-    <MovieComingWrap>
+    <MovieComingWrap
+      key={id}
+      onPress={() =>
+        navigate("Stacks", { screen: "Detail", params: { movieId: id } })
+      }
+    >
       <MovieComingPostBox>
         <MovieComingPostImg source={{ uri: getImgPath(poster_path) }} />
       </MovieComingPostBox>
