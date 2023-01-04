@@ -1,0 +1,5 @@
+export const WHITE_COLOR = "#ffffff"
+export const DARK_COLOR = "#2c3e50"
+export const BLUE_COLOR = "#70a1ff"
+export const BLACK_COLOR = "#1e272e"
+export const YELLOW_COLOR = "#ffd32a"
