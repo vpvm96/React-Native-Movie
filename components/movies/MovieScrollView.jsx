@@ -20,7 +20,6 @@ const MovieScrollView = ({ movie }) => {
 
 const MovieViewWrap = styled.TouchableOpacity`
   width: 130px;
-  margin-left: 10px;
 `
 
 const MovieViewImgBox = styled.View`

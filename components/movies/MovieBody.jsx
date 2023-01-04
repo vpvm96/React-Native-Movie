@@ -1,16 +1,19 @@
-import styled from "@emotion/native"
 import MovieComingView from "./MoivesComingView"
 import MovieScrollView from "./MovieScrollView"
+import styled from "@emotion/native"
 
 const MovieBody = ({ topRateds, upComings }) => {
   return (
     <MovieBodyWrap>
       <MovieBodyRatedTitle>Top Rated Movies</MovieBodyRatedTitle>
-      <MovieBodyRastedContainer horizontal={true}>
-        {topRateds.map((movie) => (
-          <MovieScrollView key={movie.id} movie={movie} />
-        ))}
-      </MovieBodyRastedContainer>
+      <MoviebodyRatedContainer
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={topRateds}
+        renderItem={({ item }) => <MovieScrollView movie={item} />}
+        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={<MovieBodyRatedContainerGap />}
+      />
       <MovieBodyComingTitle>Upcoming Movies</MovieBodyComingTitle>
       <MovieBodyComingContainer>
         {upComings.map((movie) => (
@@ -32,8 +35,12 @@ const MovieBodyRatedTitle = styled.Text`
   color: ${(props) => props.theme.categoryTitle};
 `
 
-const MovieBodyRastedContainer = styled.ScrollView`
+const MoviebodyRatedContainer = styled.FlatList`
   width: 100%;
+`
+
+const MovieBodyRatedContainerGap = styled.View`
+  width: 10px;
 `
 
 const MovieBodyComingTitle = styled.Text`
