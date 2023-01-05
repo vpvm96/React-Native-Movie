@@ -1,3 +1,6 @@
+import { fireStore } from "./firebase"
+import { deleteDoc, doc, updateDoc } from "firebase/firestore"
+
 const BASE_URL = "https://api.themoviedb.org/3/movie"
 const API_KEY = "6bddfa41d1886e777ac198dc0c085925"
 
@@ -21,4 +24,12 @@ export const getDetail = async (params) => {
   return fetch(
     `${BASE_URL}/${movieId}?api_key=${API_KEY}&language=en-US&append_to_response=videos`
   ).then((res) => res.json())
+}
+
+export const deleteReview = async (reviewId) => {
+  await deleteDoc(doc(fireStore, "reviews", reviewId))
+}
+
+export const editReview = async ({ reviewId, editingObj }) => {
+  await updateDoc(doc(fireStore, "reviews", reviewId), editingObj)
 }
