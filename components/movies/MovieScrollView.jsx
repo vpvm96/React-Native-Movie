@@ -10,7 +10,7 @@ const MovieScrollView = ({ movie }) => {
     <MovieViewWrap
       key={id}
       onPress={() =>
-        navigate("Stacks", { screen: "Detail", params: { movieId: id } })
+        navigate("Stack", { screen: "Detail", params: { movieId: id } })
       }
     >
       <MovieViewImgBox>

@@ -9,7 +9,7 @@ const MovieComingView = ({ movie }) => {
     <MovieComingWrap
       key={id}
       onPress={() =>
-        navigate("Stacks", { screen: "Detail", params: { movieId: id } })
+        navigate("Stack", { screen: "Detail", params: { movieId: id } })
       }
     >
       <MovieComingPostBox>
