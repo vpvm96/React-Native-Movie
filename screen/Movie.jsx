@@ -1,54 +1,66 @@
-import { useEffect, useState } from "react"
-import { ActivityIndicator, RefreshControl } from "react-native"
+import { useState } from "react"
+import { useQuery, useQueryClient, useInfiniteQuery } from "react-query"
+import { ActivityIndicator, View } from "react-native"
+import { getNowPlaying, getTopReated, getUpcoming } from "../api"
 import Swiper from "react-native-swiper"
-import MovieBody from "../components/movies/MovieBody"
 import MovieHeader from "../components/movies/MovieHeader"
+import MovieComingView from "../components/movies/MoivesComingView"
+import MovieScrollView from "../components/movies/MovieScrollView"
 import styled from "@emotion/native"
 
 const Movie = () => {
-  const [nowPlayings, setNowPlayings] = useState([])
-  const [topRateds, setTopRateds] = useState([])
-  const [upComings, setUpcomings] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [isRefreshing, setIsRefresing] = useState(false)
-  const BASE_URL = "https://api.themoviedb.org/3/movie"
-  const API_KEY = "6bddfa41d1886e777ac198dc0c085925"
 
-  const getNowPlaying = async () => {
-    const { results } = await fetch(
-      `${BASE_URL}/now_playing?api_key=${API_KEY}&language=en-US&page=1`
-    ).then((res) => res.json())
-    setNowPlayings(results)
-  }
-
-  const getTopReated = async () => {
-    const { results } = await fetch(
-      `${BASE_URL}/top_rated?api_key=${API_KEY}&language=en-US&page=1`
-    ).then((res) => res.json())
-    setTopRateds(results)
-  }
-
-  const getUpcoming = async () => {
-    const { results } = await fetch(
-      `${BASE_URL}/upcoming?api_key=${API_KEY}&language=en-US&page=1`
-    ).then((res) => res.json())
-    setUpcomings(results)
-  }
-
-  const getData = async () => {
-    await Promise.all([getNowPlaying(), getTopReated(), getUpcoming()])
-    setIsLoading(false)
-  }
+  const { data: nowPlayingData, isLoading: isLoadingNP } = useQuery(
+    ["Moives", "NowPlaying"],
+    getNowPlaying
+  )
+  const {
+    data: topRatedData,
+    isLoading: isLoadingTR,
+    fetchNextPage: fetchNextPageTR,
+    hasNextPage: hasNextPageTR,
+  } = useInfiniteQuery(["Moives", "TopRated"], getTopReated, {
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1
+      }
+    },
+  })
+  const {
+    data: upcomingData,
+    isLoading: isLoadingUC,
+    fetchNextPage: fetchNextPageUC,
+    hasNextPage: hasNextPageUC,
+  } = useInfiniteQuery(["Movies", "Upcoming"], getUpcoming, {
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1
+      }
+    },
+  })
 
   const onRefresh = async () => {
     setIsRefresing(true)
-    await getData()
+    // await Promise.all([refetchNP(), refetchTR(), refetchUC()])
+    queryClient.refetchQueries(["Movies"])
     setIsRefresing(false)
   }
 
-  useEffect(() => {
-    getData()
-  }, [])
+  const isLoading = isLoadingNP || isLoadingTR || isLoadingUC
+
+  const upcomingFetchMore = async () => {
+    if (hasNextPageUC) {
+      await fetchNextPageUC()
+    }
+  }
+
+  const ratedFetchMore = async () => {
+    if (hasNextPageTR) {
+      await fetchNextPageTR()
+    }
+  }
 
   if (isLoading) {
     return (
@@ -60,17 +72,38 @@ const Movie = () => {
 
   return (
     <MovieMainWrap
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+      onEndReached={upcomingFetchMore}
+      onEndReachedThreshold={0.5}
+      refreshing={isRefreshing}
+      onRefresh={onRefresh}
+      ListHeaderComponent={
+        <>
+          <Swiper height="100%" showsPagination={false} autoplay loop>
+            {nowPlayingData.results.map((movie) => (
+              <MovieHeader key={movie.id} movie={movie} />
+            ))}
+          </Swiper>
+          <MovieBodyWrap>
+            <MovieBodyRatedTitle>Top Rated Movies</MovieBodyRatedTitle>
+            <MoviebodyRatedContainer
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              onEndReached={ratedFetchMore}
+              onEndReachedThreshold={0.5}
+              data={topRatedData.pages.map((page) => page.results).flat()}
+              renderItem={({ item }) => <MovieScrollView movie={item} />}
+              keyExtractor={(item) => item.id}
+              ItemSeparatorComponent={<MovieBodyRatedContainerGap />}
+            />
+            <MovieBodyComingTitle>Upcoming Movies</MovieBodyComingTitle>
+          </MovieBodyWrap>
+        </>
       }
-    >
-      <Swiper height="100%" showsPagination={false} autoplay loop>
-        {nowPlayings.map((movie) => (
-          <MovieHeader key={movie.id} movie={movie} />
-        ))}
-      </Swiper>
-      <MovieBody topRateds={topRateds} upComings={upComings} />
-    </MovieMainWrap>
+      data={upcomingData.pages.map((page) => page.results).flat()}
+      renderItem={({ item }) => <MovieComingView movie={item} />}
+      keyExtractor={(item) => item.id}
+      ItemSeparatorComponent={<View style={{ height: 15 }} />}
+    />
   )
 }
 
@@ -80,8 +113,37 @@ const Loader = styled.View`
   align-items: center;
 `
 
-const MovieMainWrap = styled.ScrollView`
+const MovieMainWrap = styled.FlatList`
   width: 100%;
 `
+
+const MovieBodyWrap = styled.View`
+  width: 100%;
+`
+
+const MovieBodyRatedTitle = styled.Text`
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  color: ${(props) => props.theme.categoryTitle};
+`
+
+const MoviebodyRatedContainer = styled.FlatList`
+  width: 100%;
+`
+
+const MovieBodyRatedContainerGap = styled.View`
+  width: 10px;
+`
+
+const MovieBodyComingTitle = styled.Text`
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  color: ${(props) => props.theme.categoryTitle};
+`
+// const MovieBodyComingContainer = styled.View`
+//   width: 100%;
+// `
 
 export default Movie
