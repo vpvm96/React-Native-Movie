@@ -2,18 +2,18 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import Tabs from "./Tabs"
 import Stacks from "./Stacks"
 
-const Stack = createNativeStackNavigator()
+const Nav = createNativeStackNavigator()
 
 const Main = () => {
   return (
-    <Stack.Navigator
+    <Nav.Navigator
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Tabs" component={Tabs} />
-      <Stack.Screen name="Stacks" component={Stacks} />
-    </Stack.Navigator>
+      <Nav.Screen name="Tabs" component={Tabs} />
+      <Nav.Screen name="Stack" component={Stacks} />
+    </Nav.Navigator>
   )
 }
 
